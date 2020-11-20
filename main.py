@@ -162,7 +162,7 @@ hot_line.to_csv(
 # 陽性患者属性
 df_kanja = pd.read_csv(
     patients_path,
-    index_col="県番号",
+    index_col="No",
     dtype={"発症日": "object", "年代": "object", "備考": "object"},
 )
 
