@@ -89,7 +89,7 @@ test_people.at[datetime.datetime(2020, 4, 28), "備考"] = bikou_medical_pcr
 test_people.rename(columns={"PCR検査数": "検査実施_人数"}, inplace=True)
 
 test_people.to_csv(
-    pathlib.Path(OUT_DIR, "160001_toyama_covid19_test_people.csv"),
+    pathlib.Path(OUT_DIR, "160008_toyama_covid19_test_people.csv"),
     index=False,
     encoding="utf-8",
 )
@@ -103,7 +103,7 @@ antigen_test_people.at[datetime.datetime(2020, 6, 2), "備考"] = bikou_medicala
 antigen_test_people.rename(columns={"抗原検査数": "検査実施_人数"}, inplace=True)
 
 antigen_test_people.to_csv(
-    pathlib.Path(OUT_DIR, "160001_toyama_covid19_antigen_test_people.csv"),
+    pathlib.Path(OUT_DIR, "160008_toyama_covid19_antigen_test_people.csv"),
     index=False,
     encoding="utf-8",
 )
@@ -116,7 +116,7 @@ confirm_negative = df_counts.loc[
 ].copy()
 
 confirm_negative.to_csv(
-    pathlib.Path(OUT_DIR, "160001_toyama_covid19_confirm_negative.csv"),
+    pathlib.Path(OUT_DIR, "160008_toyama_covid19_confirm_negative.csv"),
     index=False,
     encoding="utf-8",
 )
@@ -130,7 +130,7 @@ confirm_patients = df_counts.loc[
 ].copy()
 
 confirm_patients.to_csv(
-    pathlib.Path(OUT_DIR, "160001_toyama_covid19_confirm_patients.csv"),
+    pathlib.Path(OUT_DIR, "160008_toyama_covid19_confirm_patients.csv"),
     index=False,
     encoding="utf-8",
 )
@@ -142,7 +142,7 @@ call_center = df_counts.loc[
 
 call_center.rename(columns={"一般相談件数": "相談件数"}, inplace=True)
 call_center.to_csv(
-    pathlib.Path(OUT_DIR, "160001_toyama_covid19_call_center.csv"),
+    pathlib.Path(OUT_DIR, "160008_toyama_covid19_call_center.csv"),
     index=False,
     encoding="utf-8",
 )
@@ -154,7 +154,7 @@ hot_line = df_counts.loc[
 
 hot_line.rename(columns={"受診・相談センター相談件数": "相談件数"}, inplace=True)
 hot_line.to_csv(
-    pathlib.Path(OUT_DIR, "160001_toyama_covid19_hot_line.csv"),
+    pathlib.Path(OUT_DIR, "160008_toyama_covid19_hot_line.csv"),
     index=False,
     encoding="utf-8",
 )
@@ -219,7 +219,7 @@ patients = df_kanja.loc[
 ]
 
 patients.to_csv(
-    pathlib.Path(OUT_DIR, "160001_toyama_covid19_patients.csv"),
+    pathlib.Path(OUT_DIR, "160008_toyama_covid19_patients.csv"),
     index=False,
     encoding="utf-8",
 )
