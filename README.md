@@ -9,4 +9,4 @@
 
 ## ライセンス
 本ソースコードは、[MITライセンス](./LICENSE)の下に提供されています。
-※ データの利用に当たっては、富山県オープンデータポータルサイトの[利用規約)](http://opendata.pref.toyama.jp/pages/rule/)をご確認ください。
+※ データの利用に当たっては、富山県オープンデータポータルサイトの[利用規約](http://opendata.pref.toyama.jp/pages/rule/)をご確認ください。
