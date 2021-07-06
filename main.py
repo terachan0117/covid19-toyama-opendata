@@ -56,13 +56,6 @@ df_counts = pd.read_csv(
     },
 )
 
-# 前処理
-bikou_pref_pcr = df_counts.at[datetime.datetime(2020, 2, 27), "備考"]
-bikou_medical_pcr = df_counts.at[datetime.datetime(2020, 4, 28), "備考"]
-bikou_medicalantigen = df_counts.at[datetime.datetime(2020, 6, 2), "備考"]
-
-df_counts["備考"] = ""
-
 # 検査実施人数
 df_counts["実施_年月日"] = df_counts.index.strftime("%Y-%m-%d")
 
@@ -77,13 +70,9 @@ df_counts["都道府県名"] = PREF_NAME
 df_counts["市区町村名"] = CITY_NAME
 
 # 検査実施人数
-
 test_people = df_counts.loc[
     :, ["実施_年月日", "全国地方公共団体コード", "都道府県名", "市区町村名", "PCR検査数", "備考"]
 ].copy()
-
-test_people.at[datetime.datetime(2020,2,27), "備考"] = bikou_pref_pcr
-test_people.at[datetime.datetime(2020, 4, 28), "備考"] = bikou_medical_pcr
 
 test_people.rename(columns={"PCR検査数": "検査実施_人数"}, inplace=True)
 
@@ -96,8 +85,6 @@ test_people.to_csv(
 antigen_test_people = df_counts.loc[
     :, ["実施_年月日", "全国地方公共団体コード", "都道府県名", "市区町村名", "抗原検査数", "備考"]
 ].copy()
-
-antigen_test_people.at[datetime.datetime(2020, 6, 2), "備考"] = bikou_medicalantigen
 
 antigen_test_people.rename(columns={"抗原検査数": "検査実施_人数"}, inplace=True)
 
