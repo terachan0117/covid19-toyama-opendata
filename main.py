@@ -1,46 +1,88 @@
-import datetime
-import pathlib
-import shutil
-
-import requests
-
 import pandas as pd
+import shutil
 
 # 設定
 PREF_CODE = "160008"
 PREF_NAME = "富山県"
 CITY_NAME = ""
+URL = "https://toyama-pref.box.com/shared/static/0l0hlu8mokquefbjoxbbe2qqjxx44za0.xlsx"
 
-PATIENTS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSJuQThafLPC7OPqUC9TbLV1DmSU0x2Co8VZi2Q2ZZCKLJCTayDl6IoXKyK676mzBgpkoKMgpNK1VML/pub?gid=0&single=true&output=csv"
-COUNTS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSJuQThafLPC7OPqUC9TbLV1DmSU0x2Co8VZi2Q2ZZCKLJCTayDl6IoXKyK676mzBgpkoKMgpNK1VML/pub?gid=574469870&single=true&output=csv"
+"""
+患者等発生状況
+"""
+df_patients = pd.read_excel(
+    URL,
+    sheet_name="患者等発生状況",
+    index_col="No",
+    dtype={"発症日": "object", "年代": "object", "備考": "object"},
+)
+df_patients["発症日"]=df_patients["発症日"].apply(lambda x : str(x).replace("nan","").replace(" 00:00:00",""))
+df_patients.to_csv("./data/toyama_patients.csv", encoding="utf_8_sig")
 
-OUT_DIR = "./data"
+df_patients.rename(
+    columns={
+        "検査結果判明日": "公表_年月日",
+        "発症日": "発症_年月日",
+        "居住地": "患者_居住地",
+        "年代": "患者_年代",
+        "性別": "患者_性別",
+        "職業": "患者_職業",
+        "症状": "患者_状態",
+        "渡航歴の有無": "患者_渡航歴の有無フラグ",
+        "状態": "患者_退院済フラグ",
+    },
+    inplace=True,
+)
 
-PATIENTS_FILE = "toyama_patients.csv"
-COUNTS_FILE = "toyama_counts.csv"
+df_patients["全国地方公共団体コード"] = PREF_CODE
+df_patients["都道府県名"] = PREF_NAME
+df_patients["市区町村名"] = CITY_NAME
 
+df_patients["患者_退院済フラグ"] = (
+    df_patients["患者_退院済フラグ"].replace({"入院中": 0, "入院調整中": 0, "退院": 1, "死亡": 1}).astype("Int64")
+)
 
-def get_csv(url, file_name):
+df_patients["患者_渡航歴の有無フラグ"] = (
+    df_patients["患者_渡航歴の有無フラグ"].replace({"x": 0, "o": 1}).astype("Int64")
+)
 
-    r = requests.get(url)
+df_patients["患者_症状"] = ""
 
-    p = pathlib.Path(OUT_DIR, file_name)
+df_patients["患者_年代"] = df_patients["患者_年代"].replace({"90代以上": "90歳以上"})
 
-    with p.open(mode="wb") as fw:
-        fw.write(r.content)
+patients = df_patients.loc[
+    :,
+    [
+        "全国地方公共団体コード",
+        "都道府県名",
+        "市区町村名",
+        "公表_年月日",
+        "発症_年月日",
+        "患者_居住地",
+        "患者_年代",
+        "患者_性別",
+        "患者_職業",
+        "患者_状態",
+        "患者_症状",
+        "患者_渡航歴の有無フラグ",
+        "患者_退院済フラグ",
+        "備考",
+    ],
+]
 
-    return p
+patients.to_csv(
+    "./data/160008_toyama_covid19_patients.csv",
+    index=False,
+    encoding="utf_8_sig",
+)
 
-
-# ダウンロード
-pathlib.Path(OUT_DIR).mkdir(parents=True, exist_ok=True)
-
-patients_path = get_csv(PATIENTS_URL, PATIENTS_FILE)
-counts_path = get_csv(COUNTS_URL, COUNTS_FILE)
-
-# オープンデータ作成
-df_counts = pd.read_csv(
-    counts_path,
+"""
+日別集計
+"""
+df_counts = pd.read_excel(
+    URL,
+    sheet_name="日別集計",
+    engine="openpyxl",
     index_col="年月日",
     parse_dates=True,
     dtype={
@@ -53,8 +95,9 @@ df_counts = pd.read_csv(
         "退院者数": "Int64",
         "死亡者数": "Int64",
         "備考": "object",
-    },
-)
+    }
+    )
+df_counts.to_csv("./data/toyama_counts.csv", encoding="utf_8_sig")
 
 # 検査実施人数
 df_counts["実施_年月日"] = df_counts.index.strftime("%Y-%m-%d")
@@ -77,9 +120,9 @@ test_people = df_counts.loc[
 test_people.rename(columns={"PCR検査数": "検査実施_人数"}, inplace=True)
 
 test_people.to_csv(
-    pathlib.Path(OUT_DIR, "160008_toyama_covid19_test_people.csv"),
+    "./data/160008_toyama_covid19_test_people.csv",
     index=False,
-    encoding="utf-8",
+    encoding="utf_8_sig",
 )
 
 antigen_test_people = df_counts.loc[
@@ -89,9 +132,9 @@ antigen_test_people = df_counts.loc[
 antigen_test_people.rename(columns={"抗原検査数": "検査実施_人数"}, inplace=True)
 
 antigen_test_people.to_csv(
-    pathlib.Path(OUT_DIR, "160008_toyama_covid19_antigen_test_people.csv"),
+    "./data/160008_toyama_covid19_antigen_test_people.csv",
     index=False,
-    encoding="utf-8",
+    encoding="utf_8_sig",
 )
 
 # 陰性確認数
@@ -102,9 +145,9 @@ confirm_negative = df_counts.loc[
 ].copy()
 
 confirm_negative.to_csv(
-    pathlib.Path(OUT_DIR, "160008_toyama_covid19_confirm_negative.csv"),
+    "./data/160008_toyama_covid19_confirm_negative.csv",
     index=False,
-    encoding="utf-8",
+    encoding="utf_8_sig",
 )
 
 # 入退院確認数
@@ -116,9 +159,9 @@ confirm_patients = df_counts.loc[
 ].copy()
 
 confirm_patients.to_csv(
-    pathlib.Path(OUT_DIR, "160008_toyama_covid19_confirm_patients.csv"),
+    "./data/160008_toyama_covid19_confirm_patients.csv",
     index=False,
-    encoding="utf-8",
+    encoding="utf_8_sig",
 )
 
 # 一般相談件数
@@ -128,9 +171,9 @@ call_center = df_counts.loc[
 
 call_center.rename(columns={"一般相談件数": "相談件数"}, inplace=True)
 call_center.to_csv(
-    pathlib.Path(OUT_DIR, "160008_toyama_covid19_call_center.csv"),
+    "./data/160008_toyama_covid19_call_center.csv",
     index=False,
-    encoding="utf-8",
+    encoding="utf_8_sig",
 )
 
 # 帰国者・接触者相談センター相談件数
@@ -140,75 +183,9 @@ hot_line = df_counts.loc[
 
 hot_line.rename(columns={"受診・相談センター相談件数": "相談件数"}, inplace=True)
 hot_line.to_csv(
-    pathlib.Path(OUT_DIR, "160008_toyama_covid19_hot_line.csv"),
+    "./data/160008_toyama_covid19_hot_line.csv",
     index=False,
-    encoding="utf-8",
+    encoding="utf_8_sig",
 )
-
-# 陽性患者属性
-df_kanja = pd.read_csv(
-    patients_path,
-    index_col="No",
-    dtype={"発症日": "object", "年代": "object", "備考": "object"},
-)
-
-# タイトル名変更
-df_kanja.rename(
-    columns={
-        "検査結果判明日": "公表_年月日",
-        "発症日": "発症_年月日",
-        "居住地": "患者_居住地",
-        "年代": "患者_年代",
-        "性別": "患者_性別",
-        "職業": "患者_職業",
-        "症状": "患者_状態",
-        "渡航歴の有無": "患者_渡航歴の有無フラグ",
-        "状態": "患者_退院済フラグ",
-    },
-    inplace=True,
-)
-
-df_kanja["全国地方公共団体コード"] = PREF_CODE
-df_kanja["都道府県名"] = PREF_NAME
-df_kanja["市区町村名"] = CITY_NAME
-
-df_kanja["患者_退院済フラグ"] = (
-    df_kanja["患者_退院済フラグ"].replace({"入院中": 0, "入院調整中": 0, "退院": 1, "死亡": 1}).astype("Int64")
-)
-
-df_kanja["患者_渡航歴の有無フラグ"] = (
-    df_kanja["患者_渡航歴の有無フラグ"].replace({"x": 0, "o": 1}).astype("Int64")
-)
-
-df_kanja["患者_症状"] = ""
-
-df_kanja["患者_年代"] = df_kanja["患者_年代"].replace({"90代以上": "90歳以上"})
-
-patients = df_kanja.loc[
-    :,
-    [
-        "全国地方公共団体コード",
-        "都道府県名",
-        "市区町村名",
-        "公表_年月日",
-        "発症_年月日",
-        "患者_居住地",
-        "患者_年代",
-        "患者_性別",
-        "患者_職業",
-        "患者_状態",
-        "患者_症状",
-        "患者_渡航歴の有無フラグ",
-        "患者_退院済フラグ",
-        "備考",
-    ],
-]
-
-patients.to_csv(
-    pathlib.Path(OUT_DIR, "160008_toyama_covid19_patients.csv"),
-    index=False,
-    encoding="utf-8",
-)
-
 
 shutil.make_archive("./opendata", "zip", root_dir="./data")
