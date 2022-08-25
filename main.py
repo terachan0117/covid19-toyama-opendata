@@ -39,7 +39,7 @@ df_patients["都道府県名"] = PREF_NAME
 df_patients["市区町村名"] = CITY_NAME
 
 df_patients["患者_退院済フラグ"] = (
-    df_patients["患者_退院済フラグ"].replace({"入院中": 0, "入院調整中": 0, "退院": 1, "死亡": 1, "調査中": None}).astype("Int64")
+    df_patients["患者_退院済フラグ"].replace({"入院中": 0, "入院調整中": 0, "入院": 0, "退院": 1, "死亡": 1, "調査中": None}).astype("Int64")
 )
 
 df_patients["患者_渡航歴の有無フラグ"] = (
