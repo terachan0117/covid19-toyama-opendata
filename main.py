@@ -5,7 +5,7 @@ import shutil
 PREF_CODE = "160008"
 PREF_NAME = "富山県"
 CITY_NAME = ""
-URL = "https://toyama-pref.box.com/shared/static/0l0hlu8mokquefbjoxbbe2qqjxx44za0.xlsx"
+URL = "https://toyama-pref.box.com/shared/static/8wb3518lh47jx8iv81f80jsmqnnlw46m.xlsx"
 
 """
 患者等発生状況
